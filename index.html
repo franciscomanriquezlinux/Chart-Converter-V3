@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Converter V3 | GamerCB/PanchitoManriquez</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="container">
+        <div class="rainbow-bar"></div>
+        <h1>CHART CONVERTER V3</h1>
+        <div class="author">By Gamer_CountryBalls & Panchito Manriquez</div>
+
+        <div class="mode-selector">
+            <div class="metadata-options-title">⚡ FORMATO DE ORIGEN DEL MAPA</div>
+            <div class="mode-options">
+                <label class="mode-card selected">
+                    <input type="radio" name="converter-mode" value="psych" checked>
+                    <span class="mode-icon">🎤</span>
+                    <span class="mode-name">Psych To V Slice</span>
+                </label>
+                <label class="mode-card">
+                    <input type="radio" name="converter-mode" value="psych063">
+                    <span class="mode-icon">🕰️</span>
+                    <span class="mode-name">Psych 0.6.3 To V Slice</span>
+                </label>
+                <label class="mode-card">
+                    <input type="radio" name="converter-mode" value="kade">
+                    <span class="mode-icon">🔧</span>
+                    <span class="mode-name">Kade To V Slice</span>
+                </label>
+                <label class="mode-card">
+                    <input type="radio" name="converter-mode" value="psych073">
+                    <span class="mode-icon">🚀</span>
+                    <span class="mode-name">Psych 0.7.3 To V Slice</span>
+                </label>
+                <label class="mode-card">
+                    <input type="radio" name="converter-mode" value="psych104">
+                    <span class="mode-icon">🧠</span>
+                    <span class="mode-name">Psych 1.0.4 To V Slice</span>
+                </label>
+                <label class="mode-card">
+                    <input type="radio" name="converter-mode" value="pslice">
+                    <span class="mode-icon">🫓</span>
+                    <span class="mode-name">P Slice To V Slice</span>
+                </label>
+                <label class="mode-card">
+                    <input type="radio" name="converter-mode" value="codename">
+                    <span class="mode-icon">⚡</span>
+                    <span class="mode-name">Codename To V Slice</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="status-box">
+            <span class="status-tag">CONFIGURACIÓN ACTIVA</span>
+            <p>🎯 <strong>Psych Engine:</strong> Compatibilidad automática de estructuras.</p>
+            <p>🕰️ <strong>Psych 0.6.3 (Legacy):</strong> Re-mapeo automático de carriles según mustHitSection (corrige la inversión Oponente/Jugador).</p>
+            <p>🔧 <strong>Kade Engine:</strong> Formato vanilla/legacy — carriles relativos a mustHitSection, re-mapeados a absolutos.</p>
+            <p>🚀 <strong>Psych 0.7.3 (psych_v1):</strong> Carriles absolutos 0-3 (Player) | 4-7 (Oponente), sin inversiones.</p>
+            <p>🧠 <strong>Psych 1.0.4 (psych_v1):</strong> Carriles absolutos + eventos inline de las secciones (ZoomCamera/FocusCamera).</p>
+            <p>🫓 <strong>P Slice:</strong> Fork de Psych 1.0 (PE 1.0) — mismos charts psych_v1 absolutos, eventos review-top e inline.</p>
+            <p>⚡ <strong>Codename Engine:</strong> Conversión de charts nativos (strumLines) a V Slice.</p>
+            <p>🔍 <strong>Eventos Inteligentes:</strong> Auto-mapeo de FocusCamera y ZoomCamera (Add Camera Zoom, etc.).</p>
+            <p>🔥 <strong>Regla de Oro:</strong> Carril 0-3 (Player) | Carril 4-7 (Oponente).</p>
+        </div>
+
+        <div id="drop-zone">
+            <div class="icon">⚡</div>
+            <p id="drop-text">¡Suelta tus archivos <span>.json</span> aquí!</p>
+            <small>O haz clic para explorar tus Archivos</small>
+        </div>
+        
+        <input type="file" id="file-input" accept=".json" multiple>
+        
+        <div id="file-list"></div>
+        
+        <div class="action-zone">
+            <button id="convert-btn" class="btn-convert">✨ PROCESAR ARCHIVOS ✨</button>
+            <button id="download-zip-btn" class="btn-download" style="display: none;">🎁 DESCARGAR PACK (.ZIP)</button>
+        </div>
+    </div>
+
+    <div class="code-grid">
+        <div class="editor-box chart-border">
+            <div class="editor-header">
+                <span>chart.json</span>
+                <button class="btn-copy" onclick="copyToClipboard('chart-area', this)">📋 Copiar</button>
+            </div>
+            <textarea id="chart-area" readonly placeholder="Las notas convertidas aparecerán aquí..."></textarea>
+        </div>
+        <div class="editor-box meta-border">
+            <div class="editor-header">
+                <span>metadata.json</span>
+                <button class="btn-copy" onclick="copyToClipboard('meta-area', this)">📋 Copiar</button>
+            </div>
+            <textarea id="meta-area" readonly placeholder="Los metadatos aparecerán aquí..."></textarea>
+        </div>
+    </div>
+
+    <div class="metadata-options-box">
+        <div class="metadata-options-title">🛠️ CONFIGURACIÓN EXTRA DE METADATA</div>
+        
+        <div class="option-row">
+            <div class="option-control">
+                <label class="switch">
+                    <input type="checkbox" id="album-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="control-label">Activar Álbum Roll</span>
+            </div>
+            <input type="text" id="album-input" class="meta-text-input" placeholder="Nombre del Álbum (Ej: Vol 1)..." disabled>
+        </div>
+
+        <div class="option-row">
+            <div class="option-control">
+                <label class="switch">
+                    <input type="checkbox" id="sticker-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="control-label">Activar Sticker Pack</span>
+            </div>
+            <input type="text" id="sticker-input" class="meta-text-input" placeholder="Nombre de tus Stickers..." disabled>
+        </div>
+    </div>
+
+    <div class="metadata-options-box">
+        <div class="metadata-options-title">🎬 EVENTOS INCLUIDOS AL CONVERTIR</div>
+
+        <div class="option-row">
+            <div class="option-control">
+                <label class="switch">
+                    <input type="checkbox" id="camera-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+                <span class="control-label">Eventos de Cámara (FocusCamera)</span>
+            </div>
+        </div>
+
+        <div class="option-row">
+            <div class="option-control">
+                <label class="switch">
+                    <input type="checkbox" id="zoom-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+                <span class="control-label">Eventos de Zoom (ZoomCamera)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="metadata-options-box fnfc-box">
+        <div class="metadata-options-title">💿 COMPRIMIR A FNF CLASSIC (.FNFC)</div>
+
+        <div class="option-row">
+            <div class="option-control">
+                <span class="control-label">Inst.ogg</span>
+                <span class="required-tag">OBLIGATORIO</span>
+            </div>
+            <input type="file" id="inst-audio" class="audio-input" accept=".ogg,audio/*">
+        </div>
+
+        <div class="option-row">
+            <div class="option-control">
+                <span class="control-label">Voices-[Oponente].ogg</span>
+            </div>
+            <input type="file" id="opp-audio" class="audio-input" accept=".ogg,audio/*">
+        </div>
+
+        <div class="option-row">
+            <div class="option-control">
+                <span class="control-label">Voices-[Jugador].ogg</span>
+            </div>
+            <input type="file" id="ply-audio" class="audio-input" accept=".ogg,audio/*">
+        </div>
+
+        <button id="fnfc-btn" class="btn-download" style="width: 100%; margin-top: 10px;">💿 GENERAR PACK FNF CLASSIC (.FNFC)</button>
+        <small class="fnfc-hint">El pack .fnfc incluye tus charts + Inst.ogg (obligatorio) + voces. Solo arrastra los archivos convertidos (primero dale a "✨ PROCESAR ARCHIVOS").</small>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
